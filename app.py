@@ -1,13 +1,5 @@
-class TicketManager:
-    def __init__(self):
-        self._tickets = []
-
-    def store_ticket(self, ticket):
-        self._tickets.append(ticket)
-
-
-class Ticket:
-    _ticket_id_count = 1
+class Ticket: #base class for all tickets
+    _ticket_id_count = 1 #for incrementing ticket IDs
     def __init__(self, description, priority):
         self._ticket_id = Ticket._ticket_id_count
         self._description = description
@@ -15,7 +7,7 @@ class Ticket:
         self._assigned_to = None
         self._status = "Pending"
 
-        Ticket._ticket_id_count += 1
+        Ticket._ticket_id_count += 1 #increments ID
 
     def show_details(self):
         return (
@@ -26,7 +18,7 @@ class Ticket:
             f"Status: {self._status}"
         )
 
-    def update_status(self):
+    def update_status(self): #each ticket type to progress status differently
         pass
 
     def update_priority(self, update_priority):
@@ -82,40 +74,42 @@ class IncidentTicket(Ticket):
 class RequestTicket(Ticket):
     def __init__(self, description, priority):
         super().__init__(description, priority)
-        self._approved = False
         self._fulfilment_status = "Pending Fulfilment"
+
+    def update_status(self):
+        if self._status == "Pending":
+            self._status = "Awaiting Approval"
+
+        elif self._status == "Awaiting Approval":
+            self._status = "Approved"
+        else:
+            return "The ticket has already been approved"
 
     def show_details(self):
         return(
             super().show_details()
             + f"\nFulfilment Status:{self._fulfilment_status}\n"
-            + f"Approved: {self._approved}")
-
-    def update_status(self):
-        if self._status == "Pending":
-            self._status = "Awaiting Approval"
-        else:
-            self._status = "Approved"
-            self._approved = True
+        )
 
     def update_fulfilment_status(self):
-        if self._status == "Approved" and self._fulfilment_status != "Complete":
-            self._fulfilment_status = "In Progress"
-        elif self._status == "Approved" and self._fulfilment_status == "In Progress":
-            self._fulfilment_status = "Complete"
-        elif self._status != "Approved":
+        if self._status != "Approved": #will only allow updating once ticket status is approved
             print("The ticket must be approved to progress fulfillment")
+
+        elif self._fulfilment_status == "Pending Fulfillment":
+            self._fulfilment_status = "In Progress"
+
+        elif self._fulfilment_status == "In Progress":
+            self._fulfilment_status = "Complete"
+
         else:
             print("Fulfillment is already complete")
-
-
 
 class Technician:
     def __init__(self, name, department):
         self._name = name
         self._department = department
 
-    def get_name(self):
+    def get_technician_name(self):
         return self._name
 
     def view_technician_details(self):
@@ -124,60 +118,9 @@ class Technician:
             f"Department: {self._department}"
         )
 
-test_tech = Technician("Emma", "General Support")
-test_ticket = Ticket("Test general ticket", "Low")
-test_ticket.assign_technician(test_tech.get_name())
-
-print(test_tech.view_technician_details())
-
-
 incident = IncidentTicket( "Internet Outage", "High", "Network")
 request = RequestTicket( "New Laptop Required", "High")
+technician = Technician("John", "General Support")
 
 tickets = [incident, request]
-
-print(incident.show_details())
-incident.update_priority("medium")
-incident.update_urgency("Urgent")
-print(incident.show_details())
-print("_____")
-
-request.update_status()
-request.update_status()
-request.update_fulfilment_status()
-print(request.show_details())
-print("_____")
-
-
-for ticket in tickets:
-    print(ticket.show_details())
-    ticket.update_status()
-    print("_____")
-    print(ticket.show_details())
-    print("_____")
-
-print("Please make a choice:")
-print("1. Report an Incident")
-print("2. Make a Request")
-
-while True:
-    try:
-        user_choice = int(input("Enter number: "))
-        break
-    except ValueError:
-        print("Invalid Input")
-
-
-if user_choice == 1:
-    new_ticket = IncidentTicket( "Test", "High", "Network")
-    print("Ticket Created!")
-    print(new_ticket.show_details())
-
-else:
-    new_ticket = RequestTicket( "Request Test", "High")
-    print("Ticket Created!")
-    print(new_ticket.show_details())
-
-print(tickets)
-
 
